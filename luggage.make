@@ -49,10 +49,6 @@ TAR=/usr/bin/tar
 CP=/bin/cp
 INSTALL=/usr/bin/install
 DITTO=/usr/bin/ditto
-
-PACKAGEMAKER=/usr/local/bin/packagemaker
-
-# Optionally, build packages with pkgbuild
 PKGBUILD=/usr/bin/pkgbuild
 
 # Must be on an HFS+ filesystem. Yes, I know some network servers will do
@@ -66,17 +62,6 @@ RESOURCE_D=${SCRATCH_D}/resources
 EN_LPROJ_D=${RESOURCE_D}/en.lproj
 WORK_D=${SCRATCH_D}/root
 PAYLOAD_D=${SCRATCH_D}/payload
-
-# packagemaker parameters
-#
-# packagemaker will helpfully apply the permissions it finds on the system
-# if one of the files in the payload exists on the disk, rather than the ones
-# you've carefully set up in the package root, so I turn that crap off with
-# --no-recommend. You can disable this by overriding PM_EXTRA_ARGS in your
-# package's Makefile.
-
-PM_EXTRA_ARGS=--verbose --no-recommend --no-relocate
-PM_FILTER=--filter "/CVS$$" --filter "/\.svn$$" --filter "/\.cvsignore$$" --filter "/\.cvspass$$" --filter "/(\._)?\.DS_Store$$" --filter "/\.git$$" --filter "/\.gitignore$$"
 
 # package build parameters
 #
@@ -169,17 +154,6 @@ payload_d:
 package_root:
 	@sudo mkdir -p ${WORK_D}
 
-# packagemaker chokes if the pkg doesn't contain any payload, making script-only
-# packages fail to build mysteriously if you don't remember to include something
-# in it, so we're including the /usr/local directory, since it's harmless.
-# this pseudo_payload can easily be overridden in your makefile
-
-ifeq (${USE_PKGBUILD}, 1)
-pseudo_payload: ;
-else
-pseudo_payload: l_usr_local;
-endif
-
 scriptdir: pseudo_payload
 	@sudo mkdir -p ${SCRIPT_D}
 
@@ -227,18 +201,7 @@ prep_pkg: clean compile_package
 
 pkg: prep_pkg local_pkg
 
-ifeq (${USE_PKGBUILD}, 1)
-pkgls: pkgls_pb ;
-else
-pkgls: pkgls_pm ;
-endif
-
-pkgls_pm: prep_pkg
-	@echo
-	@echo
-	lsbom -p fmUG ${PAYLOAD_D}/${PACKAGE_FILE}/Contents/Archive.bom
-
-pkgls_pb: prep_pkg
+pkgls: prep_pkg
 	@echo
 	@echo
 	lsbom -p fmUG `pkgutil --bom ${PAYLOAD_D}/${PACKAGE_FILE}`
@@ -246,20 +209,6 @@ pkgls_pb: prep_pkg
 payload: payload_d package_root scratchdir scriptdir resourcedir
 	make -e ${PAYLOAD}
 	@-echo
-
-compile_package_pm: payload .luggage.pkg.plist modify_packageroot
-	@-sudo rm -fr ${PAYLOAD_D}/${PACKAGE_FILE}
-	@echo "Creating ${PAYLOAD_D}/${PACKAGE_FILE} with ${PACKAGEMAKER}"
-	sudo ${PACKAGEMAKER} --root ${WORK_D} \
-		--id ${PACKAGE_ID} \
-		${PM_FILTER} \
-		--target ${PACKAGE_TARGET_OS} \
-		--title ${TITLE} \
-		--info ${SCRATCH_D}/luggage.pkg.plist \
-		--scripts ${SCRIPT_D} \
-		--resources ${RESOURCE_D} \
-		--version ${PACKAGE_VERSION} \
-		${PM_EXTRA_ARGS} --out ${PAYLOAD_D}/${PACKAGE_FILE}
 
 compile_package_pb: payload .luggage.pkg.component.plist modify_packageroot
 	@-sudo rm -fr ${PAYLOAD_D}/${PACKAGE_FILE}
@@ -273,11 +222,6 @@ compile_package_pb: payload .luggage.pkg.component.plist modify_packageroot
 		${PB_EXTRA_ARGS} \
 		${PAYLOAD_D}/${PACKAGE_FILE}
 
-ifeq (${USE_PKGBUILD}, 1)
-compile_package: compile_package_pb ;
-else
-compile_package: compile_package_pm ;
-endif
 
 ${PACKAGE_PLIST}: ${PLIST_PATH}
 # override this stanza if you have a different plist you want to use as
@@ -822,24 +766,6 @@ pack-script-pb-%: % scriptdir
 	@echo "******************************************************************"
 	@sudo ${INSTALL} -o root -g wheel -m 755 "${<}" ${SCRIPT_D}
 
-pack-script-pm-%: % scriptdir
-	@echo "******************************************************************"
-	@echo ""
-	@echo "Using ${PACKAGEMAKER}, make sure script names and PAYLOAD are"
-	@echo "named preflight/postflight"
-	@echo ""
-	@echo "Also check your pack-script-* stanzas in PAYLOAD"
-	@echo ""
-	@echo "******************************************************************"
-	@sudo ${INSTALL} -o root -g wheel -m 755 "${<}" ${SCRIPT_D}
-
-ifeq (${USE_PKGBUILD}, 1)
-pack-script-%: pack-script-pb-% ;
-else
-pack-script-%: pack-script-pm-% ;
-endif
-
-
 pack-resource-%: % resourcedir
 	@sudo ${INSTALL} -m 755 "${<}" ${RESOURCE_D}
 
@@ -954,7 +880,7 @@ pack-applications-%: % l_Applications
 	@sudo chown -R root:admin ${WORK_D}/Applications/"${<}"
 	@sudo chmod 755 ${WORK_D}/Applications/"${<}"
 
-# Allow for packaging software dirctly from the /Applications directory.	
+# Allow for packaging software dirctly from the /Applications directory.
 pack-from-applications-%: /Applications/% l_Applications
 	@sudo ${DITTO} --noqtn "${<}" ${WORK_D}"${<}"
 	@sudo chown -R root:admin ${WORK_D}"${<}"
