@@ -210,7 +210,7 @@ payload: payload_d package_root scratchdir scriptdir resourcedir
 	make -e ${PAYLOAD}
 	@-echo
 
-compile_package_pb: payload .luggage.pkg.component.plist modify_packageroot
+compile_package: payload .luggage.pkg.component.plist modify_packageroot
 	@-sudo rm -fr ${PAYLOAD_D}/${PACKAGE_FILE}
 	@echo "Creating ${PAYLOAD_D}/${PACKAGE_FILE} with ${PKGBUILD}."
 	sudo ${PKGBUILD} --root ${WORK_D} \
@@ -755,7 +755,7 @@ pack-Library-ScreenSavers-%: % l_Library_ScreenSavers
 pack-ppd-%: % l_PPDs
 	@sudo ${INSTALL} -m 664 -g admin -o root "${<}" ${WORK_D}/Library/Printers/PPDs/Contents/Resources
 
-pack-script-pb-%: % scriptdir
+pack-script-%: % scriptdir
 	@echo "******************************************************************"
 	@echo ""
 	@echo "Using ${PKGBUILD}, make sure scripts are"
