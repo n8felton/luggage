@@ -853,16 +853,16 @@ bundle-%: % payload_d
 	sudo ${CP} "${<}" ${PAYLOAD_D}
 
 pack-open-directory-%: % l_Library_Preferences_OpenDirectory
-	sudo install -m 600 -o root -g wheel "${<}" ${WORK_D}/Library/Preferences/OpenDirectory
+	@sudo ${INSTALL} -m 600 -o root -g wheel "${<}" ${WORK_D}/Library/Preferences/OpenDirectory
 
 pack-open-directory-configurations-%: % l_Library_Preferences_OpenDirectory_Configurations
-	sudo install -m 600 -o root -g wheel "${<}" ${WORK_D}/Library/Preferences/OpenDirectory/Configurations
+	@sudo ${INSTALL} -m 600 -o root -g wheel "${<}" ${WORK_D}/Library/Preferences/OpenDirectory/Configurations
 
 pack-open-directory-configurations-ldapv3-%: % l_Library_Preferences_OpenDirectory_Configurations_LDAPv3
-	sudo install -m 600 -o root -g wheel "${<}" ${WORK_D}/Library/Preferences/OpenDirectory/Configurations/LDAPv3
+	@sudo ${INSTALL} -m 600 -o root -g wheel "${<}" ${WORK_D}/Library/Preferences/OpenDirectory/Configurations/LDAPv3
 
 pack-directory-service-preference-%: % l_Library_Preferences_DirectoryService
-	sudo install -m 600 -o root -g admin "${<}" ${WORK_D}/Library/Preferences/DirectoryService
+	@sudo ${INSTALL} -m 600 -o root -g admin "${<}" ${WORK_D}/Library/Preferences/DirectoryService
 
 pack-site-python-%: % l_Library_Python_26_site_packages
 	@sudo ${INSTALL} -m 644 -g admin -o root "${<}" ${WORK_D}/Library/Python/2.6/site-packages
@@ -950,7 +950,7 @@ pack-etc-%: % l_private_etc
 	@sudo ${INSTALL} -m 644 -g wheel -o root "${<}" ${WORK_D}/private/etc
 
 pack-etc-openldap-%: % l_etc_openldap
-	@sudo install -m 644 -o root -g wheel "${<}" "${PKGROOT}"/etc/openldap
+	@sudo ${INSTALL} -m 644 -o root -g wheel "${<}" "${PKGROOT}"/etc/openldap
 
 pack-sbin-%: % l_private_sbin
 	@sudo ${INSTALL} -m 755 -g wheel -o root "${<}" ${WORK_D}/private/sbin
