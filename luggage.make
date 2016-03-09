@@ -221,7 +221,7 @@ dmg: scratchdir compile_package
 		-srcfolder "${PAYLOAD_D}" \
 		-uid 99 -gid 99 \
 		-ov \
-		-format "${DMG_FORMAT}" \
+		-format ${DMG_FORMAT} \
 		"${DMG_NAME}"
 
 zip: scratchdir compile_package
