@@ -50,13 +50,14 @@ CP=/bin/cp
 INSTALL=/usr/bin/install
 DITTO=/usr/bin/ditto
 
+# 
 PKGBUILD=/usr/bin/pkgbuild
+PRODUCTBUILD=/usr/bin/productbuild
 
 # Optionally, build packages with packagemaker, set USE_PKGBUILD=0
 PACKAGEMAKER=/usr/local/bin/packagemaker
 
 # Use productbuild to create flat distribution bundles - pkg-dist
-PRODUCTBUILD=/usr/bin/productbuild
 PKG_DIST=${TITLE}_dist-${PACKAGE_VERSION}.pkg
 
 # Must be on an HFS+ filesystem. Yes, I know some network servers will do
@@ -70,6 +71,41 @@ RESOURCE_D=${SCRATCH_D}/resources
 EN_LPROJ_D=${RESOURCE_D}/en.lproj
 WORK_D=${SCRATCH_D}/root
 PAYLOAD_D=${SCRATCH_D}/payload
+
+# productbuild variables
+# https://developer.apple.com/library/mac/documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Introduction.html
+# An installer package can contain only one distribution definition file, which must be named distribution.dist.
+DISTRIBUTION=distribution.dist
+# Structure of a typical distribution definition file
+# installer-gui-script
+# |-- title
+# |-- background, welcome, readme, license, conclusion
+# |-- options
+# |-- choice
+# |   `-- pkg-ref
+# |-- choices-outline
+# |   |-- line
+# |       `-- line
+# |-- installation-check
+# |-- volume-check
+# `-- script
+# <?xml version="1.0" encoding="utf-8" standalone="no"?>
+# <installer-gui-script minSpecVersion="1">
+#     <pkg-ref id="root">
+#         <bundle-version/>
+#     </pkg-ref>
+#     <options customize="never" require-scripts="false"/>
+#     <choice id="default"/>
+#     <choice id="root" visible="false">
+#         <pkg-ref id="root"/>
+#     </choice>
+#     <choices-outline>
+#         <line choice="default">
+#             <line choice="root"/>
+#         </line>
+#     </choices-outline>
+#     <pkg-ref id="root" version="0" onConclusion="none" installKBytes="5">package.pkg</pkg-ref>
+# </installer-gui-script>
 
 # packagemaker parameters
 #
@@ -280,11 +316,31 @@ compile_package_pb: payload luggage.pkg.component.plist kill_relocate modify_pac
 		${PB_EXTRA_ARGS} \
 		"${PAYLOAD_D}/${PACKAGE_FILE}"
 
+build_productbuild: build_distribution
+	@-sudo rm -fr "${PAYLOAD_D}/${PACKAGE_FILE}"
+	@echo "Creating ${PAYLOAD_D}/${PACKAGE_FILE} with ${PRODUCTBUILD}."
+	sudo ${PRODUCTBUILD} --root "${WORK_D}" \
+		--component-plist "${SCRATCH_D}/luggage.pkg.component.plist" \
+		--identifier "${PACKAGE_ID}" \
+		${PM_FILTER} \
+		--scripts "${SCRIPT_D}" \
+		--version ${PACKAGE_VERSION} \
+		${PB_EXTRA_ARGS} \
+		"${PAYLOAD_D}/${PACKAGE_FILE}"
+
+build_distribution: compile_package_pb
+	sudo ${PRODUCTBUILD} --synthesize \
+		--package "${PAYLOAD_D}/${PACKAGE_FILE}" \
+		"${SCRATCH_D}/distribution.dist"
+	@cat "${SCRATCH_D}/distribution.dist"
+		
+
 create_flatdist:
 	@-sudo rm -fr "${PAYLOAD_D}/${PKG_DIST}"
 	@echo "Creating flat distribution package ${PKG_DIST}..."
-	@-sudo ${PRODUCTBUILD} --quiet \
+	sudo ${PRODUCTBUILD} --quiet \
 	--package "${PAYLOAD_D}/${PACKAGE_FILE}" \
+	--resources "${RESOURCE_D}" \
 	"${PAYLOAD_D}/${PKG_DIST}"
 	@${CP} -R "${PAYLOAD_D}/${PKG_DIST}" .
 
@@ -317,7 +373,7 @@ luggage.pkg.plist: ${PACKAGE_PLIST}
 	@rm luggage.pkg.plist "${PACKAGE_PLIST}"
 
 luggage.pkg.component.plist:
-	@sudo ${PKGBUILD} --quiet --analyze --root "${WORK_D}" \
+	sudo ${PKGBUILD} --quiet --analyze --root "${WORK_D}" \
 		${PM_FILTER} \
 		"${SCRATCH_D}/luggage.pkg.component.plist"
 	@if [[ ! -f "$${SCRATCH_D}/luggage.pkg.component.plist" ]]; then echo "Error disabling bundle relocation: No component plist found!" 2>&1; else \
