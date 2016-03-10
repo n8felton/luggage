@@ -618,8 +618,8 @@ l_Applications_Utilities: l_root
 
 l_Library: l_root
 	@sudo mkdir -p "${WORK_D}/Library"
-	@sudo chown root:admin "${WORK_D}/Library"
-	@sudo chmod 1775 "${WORK_D}/Library"
+	@sudo chown root:wheel "${WORK_D}/Library"
+	@sudo chmod 755 "${WORK_D}/Library"
 
 l_Library_Application_Support: l_Library
 	@sudo mkdir -p "${WORK_D}/Library/Application Support"
