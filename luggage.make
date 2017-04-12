@@ -32,9 +32,9 @@ PACKAGE_ID=${REVERSE_DOMAIN}.${TITLE}
 
 # Set PACKAGE_VERSION in your Makefile if you don't want version set to
 # today's date
-PACKAGE_VERSION=${STAMP}
-PACKAGE_MAJOR_VERSION=${YY}
-PACKAGE_MINOR_VERSION=${MM}${DD}
+PACKAGE_VERSION=$(shell date +"%Y.%m.%d")
+PACKAGE_MAJOR_VERSION=$(shell date +"%y")
+PACKAGE_MINOR_VERSION=$(shell date +"%m")
 
 # Set PACKAGE_NAME in your Makefile if you don't want it to be TITLE-PACKAGEVERSION.
 PACKAGE_NAME=${TITLE}-${PACKAGE_VERSION}
