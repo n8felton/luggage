@@ -228,7 +228,7 @@ dmg: scratchdir outputdir compile_package
 		-fs ${DMG_FS} \
 		-format ${DMG_FORMAT} \
 		"${SCRATCH_D}/${DMG_NAME}"
-	sudo ${CP} "${SCRATCH_D}/${DMG_NAME}" "${OUTPUT_D}/"
+	@sudo ${CP} "${SCRATCH_D}/${DMG_NAME}" "${OUTPUT_D}/"
 
 zip: scratchdir compile_package
 	@echo "Zipping ${PACKAGE_NAME}..."
@@ -237,7 +237,7 @@ zip: scratchdir compile_package
 		--sequesterRsrc \
 		"${PAYLOAD_D}" \
 		"${SCRATCH_D}/${ZIP_NAME}"
-	sudo ${CP} "${SCRATCH_D}/${ZIP_NAME}" "${OUTPUT_D}/"
+	@sudo ${CP} "${SCRATCH_D}/${ZIP_NAME}" "${OUTPUT_D}/"
 		"${ZIP_NAME}"
 
 modify_packageroot:
