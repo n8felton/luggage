@@ -152,8 +152,6 @@ LUGGAGE_LOCAL:=$(dir $(word $(words $(MAKEFILE_LIST)), \
 	$(MAKEFILE_LIST)))/luggage.local
 -include $(LUGGAGE_LOCAL)
 
-.EXPORT_ALL_VARIABLES:
-
 
 # target stanzas
 
