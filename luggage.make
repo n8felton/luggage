@@ -279,8 +279,8 @@ compile_package_pm: payload luggage.pkg.plist modify_packageroot
 		--scripts "${SCRIPT_D}" \
 		--resources "${RESOURCE_D}" \
 		--version ${PACKAGE_VERSION} \
-		${PM_EXTRA_ARGS} --out ${PAYLOAD_D}/${PACKAGE_FILE}
-	sudo ${CP} ${PAYLOAD_D}/${PACKAGE_FILE} ${OUTPUT_D}/
+		${PM_EXTRA_ARGS} --out "${PAYLOAD_D}/${PACKAGE_FILE}"
+	sudo ${CP} "${PAYLOAD_D}/${PACKAGE_FILE}" "${OUTPUT_D}/"
 
 compile_package_pb: payload luggage.pkg.component.plist kill_relocate modify_packageroot
 	@-sudo rm -fr "${PAYLOAD_D}/${PACKAGE_FILE}"
@@ -292,16 +292,16 @@ compile_package_pb: payload luggage.pkg.component.plist kill_relocate modify_pac
 		--scripts "${SCRIPT_D}" \
 		--version ${PACKAGE_VERSION} \
 		${PB_EXTRA_ARGS} \
-		${PAYLOAD_D}/${PACKAGE_FILE}
-	sudo ${CP} ${PAYLOAD_D}/${PACKAGE_FILE} ${OUTPUT_D}/
+		"${PAYLOAD_D}/${PACKAGE_FILE}"
+	sudo ${CP} "${PAYLOAD_D}/${PACKAGE_FILE}" "${OUTPUT_D}/"
 
 create_flatdist:
 	@-sudo rm -fr "${PAYLOAD_D}/${PKG_DIST}"
 	@echo "Creating flat distribution package ${PKG_DIST}..."
 	@-sudo ${PRODUCTBUILD} --quiet \
-	--package ${PAYLOAD_D}/${PACKAGE_FILE} \
-	${PAYLOAD_D}/${PKG_DIST}
-	sudo ${CP} -R ${PAYLOAD_D}/${PKG_DIST} ${OUTPUT_D}/
+	--package "${PAYLOAD_D}/${PACKAGE_FILE}" \
+	"${PAYLOAD_D}/${PKG_DIST}"
+	sudo ${CP} -R "${PAYLOAD_D}/${PKG_DIST}" "${OUTPUT_D}/"
 
 ifeq (${USE_PKGBUILD}, 0)
 compile_package: compile_package_pm ;
