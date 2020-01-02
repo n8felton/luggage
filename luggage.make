@@ -206,8 +206,8 @@ scratchdir:
 	@sudo mkdir -p "${SCRATCH_D}"
 
 outputdir:
-	[[ ${OUTPUT_D} == "." ]] || sudo mkdir -p ${OUTPUT_D}
-	[[ ${OUTPUT_D} == "." ]] || sudo chmod 775 ${OUTPUT_D}
+	@[[ ${OUTPUT_D} == "." ]] || sudo mkdir -p ${OUTPUT_D}
+	@[[ ${OUTPUT_D} == "." ]] || sudo chmod 775 ${OUTPUT_D}
 
 # user targets
 
